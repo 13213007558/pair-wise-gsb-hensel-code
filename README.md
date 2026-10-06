@@ -695,6 +695,45 @@ rat1 / rat2
 # => (6/5)
 ```
 
+## Unramified p-adic extensions
+
+### Description
+
+An unramified p-adic extension is constructed from a prime `p`, a monic integer polynomial that is
+irreducible modulo `p`, and a p-adic precision `N`. Elements are represented in the fixed power basis
+`1, theta, ..., theta^(d-1)`, where `d` is the degree of the defining polynomial, and each element
+carries its effective p-adic precision: its coefficients are known modulo `p^N`. The degree of the
+basis and the p-adic precision are independent quantities; reduction modulo the defining polynomial
+and truncation of coefficients modulo `p^N` are handled separately. Only the unramified case is
+supported: a modulus that is not monic or not irreducible modulo `p` is rejected.
+
+### Usage
+```ruby
+field = HenselCode::UnramifiedPadicExtension.new(5, [1, 1, 1], 6) # theta^2 + theta + 1, precision 6
+theta = field.generator
+a = field.element([3, 2])
+b = field.element([1, 4])
+a + b
+# => <UnramifiedPadicExtension::Element: 4 + 6*theta (mod 5^6)>
+a * b
+# => <UnramifiedPadicExtension::Element: 15620 + 6*theta (mod 5^6)>
+a * a.inverse
+# => <UnramifiedPadicExtension::Element: 1 + 0*theta (mod 5^6)>
+theta.frobenius
+# => <UnramifiedPadicExtension::Element: 15624 + 15624*theta (mod 5^6)>
+a.frobenius.frobenius == a
+# => true
+a.trace
+# => <UnramifiedPadicExtension::Element: 4 + 0*theta (mod 5^6)>
+a.norm
+# => <UnramifiedPadicExtension::Element: 7 + 0*theta (mod 5^6)>
+c = field.element([3, 2], precision: 3)
+(c * b).precision
+# => 3
+HenselCode::UnramifiedPadicExtension.new(5, [-1, 0, 1], 6)
+# => HenselCode::ModulusNotUnramified: modulus must be irreducible modulo 5; ...
+```
+
 ## Class Aliases
 
 Since some classes can have long names, here are some aliases that can be used for keeping the lines of code shorter:

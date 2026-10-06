@@ -14,6 +14,9 @@ module HenselCode
   class HenselCodesWithDifferentExponents < StandardError; end
   class IncompatibleOperandTypes < StandardError; end
   class NonInitializableClass < StandardError; end
+  class ModulusNotMonic < StandardError; end
+  class ModulusNotUnramified < StandardError; end
+  class NonInvertibleElement < StandardError; end
 
   autoload  :Tools, "hensel_code/tools"
   autoload  :PAdicBase, "hensel_code/padic_base"
@@ -26,6 +29,7 @@ module HenselCode
   autoload  :FiniteGadicExpansion, "hensel_code/finite_gadic_expansion"
   autoload  :TruncatedFinitePadicExpansion, "hensel_code/truncated_finite_padic_expansion"
   autoload  :TruncatedFiniteGadicExpansion, "hensel_code/truncated_finite_gadic_expansion"
+  autoload  :UnramifiedPadicExtension, "hensel_code/unramified_padic_extension"
 
   # aliases for classes with long names
   TFPE = TruncatedFinitePadicExpansion
