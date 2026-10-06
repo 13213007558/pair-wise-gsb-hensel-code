@@ -52,6 +52,7 @@ There are several types of Hensel codes in the finite-segment p-adic number theo
 2. Finite-segment p-adic Hensel codes 
 3. Truncated finite-segment g-adic Hensel codes
 4. Finite-segmenet g-adic Hensel codes
+5. p-adic balls with explicit absolute precision
 
 For each type of supported Hensel code I will briefly discuss their properties and capabilities as well as unique features that make each type of Hensel code distinct from each other.
 
@@ -315,6 +316,67 @@ We can update the Hensel code value of an existing Hensel code object:
 ```ruby
 h.replace_hensel_code(38769823656)
 # => <HenselCode: 38769823656>
+```
+
+## p-adic balls
+
+### Description
+
+Two values can both be represented by the residue `0` modulo `p^r`, while having very different reliable information. One may be the exact number zero, while the other is only known to belong to `p^r Z_p`. `HenselCode::PAdicBall` keeps these cases separate.
+
+A ball is represented by a `center`, a provable `valuation` for every element in the ball, and an `absolute_precision`. A finite ball is the set `center + p^absolute_precision Z_p`. An infinite absolute precision represents an exact singleton.
+
+### Usage
+
+```ruby
+exact_zero = HenselCode::PAdicBall.new(
+  5,
+  0,
+  Float::INFINITY,
+  Float::INFINITY
+)
+
+uncertain_zero = HenselCode::PAdicBall.new(5, 0, 2, 2)
+
+exact_zero.exact_zero?
+# => true
+exact_zero.uncertain_zero?
+# => false
+uncertain_zero.exact_zero?
+# => false
+uncertain_zero.uncertain_zero?
+# => true
+uncertain_zero.possible_residues(3)
+# => [0, 25, 50, 75, 100]
+```
+
+Arithmetic returns only precision that is provable for every pair of values in the input balls:
+
+```ruby
+unit = HenselCode::PAdicBall.new(5, 2, 0, 2)
+divisible = HenselCode::PAdicBall.new(5, 10, 1, 4)
+
+(unit * divisible).absolute_precision
+# => 4
+unit.inverse
+# => <HenselCode::PAdicBall: 13 + 5^2 Z_5>
+```
+
+Cancellation does not manufacture infinite precision. Subtracting a ball from itself yields a finite ball centered at zero:
+
+```ruby
+ball = HenselCode::PAdicBall.new(5, 1, 0, 2)
+difference = ball - ball
+# => <HenselCode::PAdicBall: 0 + 5^2 Z_5>
+difference.valuation
+# => 2
+```
+
+If a ball contains zero, its inverse may be infinite for one possible value and may have many possible valuations for nearby values. The operation therefore raises rather than inventing a result:
+
+```ruby
+uncertain_zero.inverse
+# => ZeroDivisionError: cannot invert ...: it contains zero
 ```
 
 ## Polynomials
