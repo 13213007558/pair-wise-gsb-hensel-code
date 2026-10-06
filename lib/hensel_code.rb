@@ -14,8 +14,10 @@ module HenselCode
   class HenselCodesWithDifferentExponents < StandardError; end
   class IncompatibleOperandTypes < StandardError; end
   class NonInitializableClass < StandardError; end
+  class NonSquareMatrix < StandardError; end
 
   autoload  :Tools, "hensel_code/tools"
+  autoload  :MultiModular, "hensel_code/multi_modular"
   autoload  :PAdicBase, "hensel_code/padic_base"
   autoload  :GAdicBase, "hensel_code/gadic_base"
   autoload  :Polynomial, "hensel_code/polynomial"

@@ -1,3 +1,7 @@
+## [Unreleased]
+- Add the `MultiModular` module for exact determinant computation of integer and rational matrices via
+  multi-modular evaluation, an explicit Hadamard bound, and CRT-based signed recovery.
+
 ## [0.4.0] - 2022-03-29
 - Add the fourth type of supported Hensel code: the finite-segement g-adic Hensel code.
 
