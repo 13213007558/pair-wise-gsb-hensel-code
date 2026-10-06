@@ -41,8 +41,10 @@ module HenselCode
       case number
       when Rational
         @rational = number
+        @exact_zero_input = number.zero?
       when Integer
-        @hensel_code = number
+        @hensel_code = number % modulus
+        @exact_zero_input = false
         decode
       else
         raise WrongHenselCodeInputType, "number must be a Rational or an\

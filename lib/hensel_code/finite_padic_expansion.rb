@@ -9,6 +9,16 @@ module HenselCode
       prime
     end
 
+    def unit_decomposition
+      decomposition = super
+      return decomposition if decomposition[:residue].zero?
+
+      decomposition.merge(
+        teichmuller_root_digits: p_adic_digits(decomposition[:teichmuller_root], decomposition[:unit_exponent]),
+        principal_unit_digits: p_adic_digits(decomposition[:principal_unit], decomposition[:unit_exponent])
+      )
+    end
+
     def to_a
       hensel_code
     end
@@ -32,6 +42,12 @@ module HenselCode
       self.class.new prime, exponent, new_hensel_code
     end
 
+    def replace_hensel_code(new_hensel_code)
+      super
+      @polynomial = Polynomial.new prime, hensel_code
+      self
+    end
+
     private
 
     def polynomial_form
@@ -46,9 +62,12 @@ module HenselCode
     def valid_number?(number)
       if number.is_a?(Rational)
         @rational = number
+        @exact_zero_input = number.zero?
       elsif number.is_a?(Array) && number.map(&:class).uniq == [Integer] && number.size == exponent
         @hensel_code = number
+        @exact_zero_input = false
         decode
+        @polynomial = Polynomial.new prime, hensel_code
       else
         message = "number must be a Rational or an\
         Array of integers of size #{exponent}"
@@ -101,6 +120,19 @@ module HenselCode
 
     def rational_to_integer(rat)
       (rat.numerator * mod_inverse(rat.denominator, prime)) % prime
+    end
+
+    def unit_decomposition_residue
+      hensel_code.each_with_index.sum { |digit, index| digit * (prime**index) }
+    end
+
+    def p_adic_digits(number, digit_count)
+      digits = []
+      digit_count.times do
+        digits << (number % prime)
+        number /= prime
+      end
+      digits
     end
   end
 end

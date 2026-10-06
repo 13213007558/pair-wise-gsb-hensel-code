@@ -139,6 +139,28 @@ rat1 / rat2
 # => (9/20)
 ```
 
+### Unit Decomposition
+
+A nonzero residue modulo `p^N` has the multiplicative decomposition
+
+```text
+x = p^v * omega * u (mod p^N),
+```
+
+where `v = v_p(x)` is the valuation, `omega` is the Teichmüller root of unity lifted to the available precision `p^(N-v)`, and `u` is the principal unit. Increasing the input precision extends `omega` and `u` consistently instead of replacing them with their lowest residues. The result can be reconstructed with
+
+```ruby
+d = h.unit_decomposition
+unit = d[:teichmuller_root] * d[:principal_unit] % d[:unit_modulus]
+d[:valuation_power] * unit % d[:modulus]
+```
+
+The root and principal unit are stored modulo `d[:unit_modulus] = p^(N-v)`, while the valuation factor is the ordinary integer `p^v`.
+
+For odd primes, `omega^p = omega (mod p^(N-v))` and `u = 1 + p*Z_p`. For `p = 2` and at least two effective unit digits, the signed convention is `omega in {1, -1}` and `u = 1 + 4*Z_2`, with `omega^2 = 1 (mod 2^(N-v))`. At one bit of unit precision only the odd residue is known, so the positive root and the `u = 1 + 2*Z_2` convention are reported explicitly.
+
+Zero has two separate states. A `Rational(0)` input reports `:exact_zero`; an integer input congruent to zero modulo `p^N`, such as `p^N` itself, reports `:zero_modulo_prime_power` because only that residue is known.
+
 ### Which Prime Should I Use?
 
 The choice of the prime you should use for encoding rationals into integers depends on two factors:

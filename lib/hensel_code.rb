@@ -18,6 +18,7 @@ module HenselCode
   autoload  :Tools, "hensel_code/tools"
   autoload  :PAdicBase, "hensel_code/padic_base"
   autoload  :GAdicBase, "hensel_code/gadic_base"
+  autoload  :PAdicUnitDecomposition, "hensel_code/padic_unit_decomposition"
   autoload  :Polynomial, "hensel_code/polynomial"
   autoload  :PAdicVerifier, "hensel_code/padic_verifier"
   autoload  :GAdicVerifier, "hensel_code/gadic_verifier"

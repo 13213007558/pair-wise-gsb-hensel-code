@@ -14,9 +14,33 @@ module HenselCode
       @prime = prime
       @exponent = exponent
       @n = Integer.sqrt(((prime**exponent) - 1) / 2)
+      @exact_zero_input = false
       valid_number?(number)
-      encode
-      decode
+      if number.is_a?(Rational)
+        encode
+        decode
+      end
+    end
+
+    def zero_status
+      unit_decomposition[:status]
+    end
+
+    def exact_zero?
+      unit_decomposition[:exact_zero]
+    end
+
+    def zero_modulo_prime_power?
+      unit_decomposition[:zero_modulo_prime_power]
+    end
+
+    def unit_decomposition
+      PAdicUnitDecomposition.decompose(
+        prime,
+        exponent,
+        unit_decomposition_residue,
+        @exact_zero_input
+      )
     end
 
     def numerator
@@ -61,12 +85,16 @@ module HenselCode
     end
 
     def replace_rational(new_rational)
+      @exact_zero_input = new_rational.zero?
       replace_attribute("rational=", new_rational, 0)
     end
 
     def replace_hensel_code(new_hensel_code)
       valid_hensel_code?(new_hensel_code)
-      replace_attribute("hensel_code=", new_hensel_code, 1)
+      @exact_zero_input = false
+      send("hensel_code=", new_hensel_code)
+      decode
+      self
     end
 
     private
@@ -74,6 +102,10 @@ module HenselCode
     def can_initilize?
       message = "#{self.class} can only be inherited."
       raise NonInitializableClass, message if instance_of?(HenselCode::PAdicBase)
+    end
+
+    def unit_decomposition_residue
+      hensel_code % (prime**exponent)
     end
 
     def replace_attribute(attribute, new_value, order)
