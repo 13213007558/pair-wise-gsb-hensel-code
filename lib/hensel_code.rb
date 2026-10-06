@@ -19,6 +19,8 @@ module HenselCode
   autoload  :PAdicBase, "hensel_code/padic_base"
   autoload  :GAdicBase, "hensel_code/gadic_base"
   autoload  :Polynomial, "hensel_code/polynomial"
+  autoload  :MultivariatePolynomial, "hensel_code/multivariate_polynomial"
+  autoload  :MultivariateHensel, "hensel_code/multivariate_hensel"
   autoload  :PAdicVerifier, "hensel_code/padic_verifier"
   autoload  :GAdicVerifier, "hensel_code/gadic_verifier"
   autoload  :ModularArithmetic, "hensel_code/modular_arithmetic"

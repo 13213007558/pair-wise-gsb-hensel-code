@@ -695,6 +695,41 @@ rat1 / rat2
 # => (6/5)
 ```
 
+## Multivariate Hensel lifting
+
+`HenselCode::MultivariateHensel` lifts a known solution of a square system of integer polynomial equations from modulo `p` to modulo `p^N`. Equations are given as structured `HenselCode::MultivariatePolynomial` objects (sparse exponent-vector/coefficient maps); no string expressions are evaluated.
+
+```ruby
+prime = 5
+
+# f1 = x0^2 + x1 - 3, f2 = x1^2 + x0 (mutually coupled in x0 and x1)
+f1 = HenselCode::MultivariatePolynomial.new(2, [2, 0] => 1, [0, 1] => 1, [0, 0] => -3)
+f2 = HenselCode::MultivariatePolynomial.new(2, [0, 2] => 1, [1, 0] => 1)
+
+result = HenselCode::MultivariateHensel.lift(
+  equations: [f1, f2],
+  prime: prime,
+  seed: [1, 2], # f1(1, 2) = 0 and f2(1, 2) = 5, both 0 mod 5
+  exponent: 4
+)
+
+result.applicable? # => true
+result.solution    # => [591, 97] (solution modulo 5^4 = 625)
+result.precision   # => 4
+result.levels.map(&:precision)   # => [2, 3, 4]
+result.levels.map(&:residuals)   # exact F(x_k) at each level k
+result.final_residuals           # => [0, 0] (all equations, substituted back mod 5^4)
+result.verified?                 # => true
+```
+
+The Jacobian at the seed is verified to be invertible modulo `p` before lifting. When the seed is not a solution modulo `p`, or the Jacobian is singular modulo `p`, no branch enumeration is attempted and the result clearly reports that lifting does not apply:
+
+```ruby
+result = HenselCode::MultivariateHensel.lift(equations: [f1, f2], prime: 5, seed: [0, 0], exponent: 4)
+result.applicable? # => false
+result.reason      # => "seed [0, 0] is not a solution modulo 5"
+```
+
 ## Class Aliases
 
 Since some classes can have long names, here are some aliases that can be used for keeping the lines of code shorter:
