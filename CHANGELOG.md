@@ -1,3 +1,6 @@
+## Unreleased
+- Add p-adic `log` and `exp` with caller-specified target precision, p=2 convergence-domain checks, denominator valuation tracking, and truncation metadata.
+
 ## [0.4.0] - 2022-03-29
 - Add the fourth type of supported Hensel code: the finite-segement g-adic Hensel code.
 

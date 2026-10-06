@@ -5,6 +5,7 @@ module HenselCode
   class PAdicBase
     include Tools
     include PAdicVerifier
+    include PAdicTranscendental
 
     attr_accessor :prime, :exponent, :rational, :hensel_code, :n
     private :prime=, :exponent=, :rational=, :hensel_code=

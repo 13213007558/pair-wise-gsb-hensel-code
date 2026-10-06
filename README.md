@@ -509,6 +509,25 @@ rat1 / rat2
 # => (14/33)
 ```
 
+### p-adic logarithm and exponential
+
+The methods `log(target_precision)` and `exp(target_precision)` evaluate the p-adic power series directly; they never use the real-valued `Math.log` or `Math.exp`. The requested precision must not exceed the precision of the receiver:
+
+- `#log` accepts a p-adic unit `x` in `1 + p Z_p` for odd primes and in `1 + 4 Z_2` for `p = 2`.
+- `#exp` accepts `x` in `p Z_p` for odd primes and in `4 Z_2` for `p = 2`.
+- Values outside these domains raise `HenselCode::PAdicConvergenceDomainError`.
+
+```ruby
+x = HenselCode::FinitePadicExpansion.new(2, 8, Rational(13, 5))
+logarithm = x.log(6)
+restored_x = logarithm.exp(6)
+
+x.padic_residue_mod(2**6) == restored_x.padic_residue_mod(2**6)
+# => true
+```
+
+Each denominator is split into its p-free unit and its p-adic factor. The factor is accounted for in the valuation of the term, while only the p-free unit is inverted. The returned Hensel code exposes `transcendental_metadata`, including `effective_precision`, per-term valuations, per-term denominator precision loss, the first omitted term, a lower bound on the omitted tail valuation, and the textual stop reason.
+
 ## Truncated finite-segment g-adic Hensel codes
 ### Description
 Kurt Mahler refers to p-adic numbers based on multiple distinct primes as `g-adic numbers` (Lectures on Diophantine Approximations, 1961 and Introduction to p-adic Numbers and Their Functions, 1973). John F. Morrison, 1988, remarks that `g` is the product of `k` distinct primes, which are used to generate a g-adic number with a unique g-adic representation. 

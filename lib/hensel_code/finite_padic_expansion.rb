@@ -13,6 +13,10 @@ module HenselCode
       hensel_code
     end
 
+    def padic_residue_mod(modulus)
+      hensel_code.each_with_index.sum { |digit, index| digit * (prime**index) } % modulus
+    end
+
     def to_truncated
       TruncatedFinitePadicExpansion.new(prime, exponent, rational)
     end
@@ -74,7 +78,7 @@ module HenselCode
     def decode
       number = 0
       hensel_code.each_with_index { |d, i| number += d * (prime**i) }
-      @rational = TruncatedFinitePadicExpansion.new(prime, exponent, number).to_r
+      @rational = number.zero? ? Rational(0, 1) : TruncatedFinitePadicExpansion.new(prime, exponent, number).to_r
     end
 
     def rational_to_padic_digits

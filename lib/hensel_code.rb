@@ -14,8 +14,11 @@ module HenselCode
   class HenselCodesWithDifferentExponents < StandardError; end
   class IncompatibleOperandTypes < StandardError; end
   class NonInitializableClass < StandardError; end
+  class PAdicConvergenceDomainError < ArgumentError; end
+  class InsufficientPAdicPrecisionError < ArgumentError; end
 
   autoload  :Tools, "hensel_code/tools"
+  autoload  :PAdicTranscendental, "hensel_code/padic_transcendental"
   autoload  :PAdicBase, "hensel_code/padic_base"
   autoload  :GAdicBase, "hensel_code/gadic_base"
   autoload  :Polynomial, "hensel_code/polynomial"

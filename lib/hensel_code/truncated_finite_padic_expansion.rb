@@ -11,6 +11,10 @@ module HenselCode
       hensel_code
     end
 
+    def padic_residue_mod(modulus)
+      hensel_code % modulus
+    end
+
     def to_s
       hensel_code.to_s
     end
@@ -61,6 +65,8 @@ module HenselCode
     end
 
     def decode
+      return @rational = Rational(0, 1) if hensel_code.zero?
+
       eea_vars = eea_core(modulus, hensel_code, n)
       i, x, y = eea_vars[2..4]
       @rational = Rational(*[x, y].map { |e| ((-1)**(i + 1)) * e })

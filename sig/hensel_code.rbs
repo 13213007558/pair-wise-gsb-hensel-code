@@ -1,4 +1,23 @@
 module HenselCode
   VERSION: String
+
+  class PAdicBase
+    def log: (?Integer) -> PAdicBase
+    def exp: (?Integer) -> PAdicBase
+    def transcendental_metadata: () -> Hash[Symbol, untyped]?
+    def padic_residue_mod: (Integer) -> Integer
+  end
+
+  class FinitePadicExpansion < PAdicBase
+  end
+
+  class TruncatedFinitePadicExpansion < PAdicBase
+  end
+
+  class PAdicConvergenceDomainError < ArgumentError
+  end
+
+  class InsufficientPAdicPrecisionError < ArgumentError
+  end
   # See the writing guide of rbs: https://github.com/ruby/rbs#guides
 end
