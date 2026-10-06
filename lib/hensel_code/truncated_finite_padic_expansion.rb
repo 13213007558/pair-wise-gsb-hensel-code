@@ -3,6 +3,8 @@
 module HenselCode
   # truncated finite p-adic expansion hensel code class
   class TruncatedFinitePadicExpansion < PAdicBase
+    include PAdicSeries
+
     def modulus
       prime**exponent
     end

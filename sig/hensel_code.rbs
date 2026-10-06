@@ -1,4 +1,38 @@
 module HenselCode
   VERSION: String
   # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+  class Error < StandardError
+  end
+
+  class ConvergenceDomainError < Error
+  end
+
+  class InsufficientPrecision < Error
+  end
+
+  class FinitePadicExpansion
+    include PAdicSeries
+  end
+
+  class TruncatedFinitePadicExpansion
+    include PAdicSeries
+  end
+
+  module PAdicSeries
+    class Result < Struct
+      attr_accessor prime: Integer
+      attr_accessor function: Symbol
+      attr_accessor target_precision: Integer
+      attr_accessor effective_precision: Integer
+      attr_accessor value: FinitePadicExpansion | TruncatedFinitePadicExpansion
+      attr_accessor terms_evaluated: Integer
+      attr_accessor first_omitted_term: Integer
+      attr_accessor first_omitted_valuation: Integer
+      attr_accessor stop_reason: String
+    end
+
+    def log: (Integer target_precision) -> Result
+    def exp: (Integer target_precision) -> Result
+  end
 end

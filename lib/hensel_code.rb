@@ -16,6 +16,7 @@ module HenselCode
   class NonInitializableClass < StandardError; end
 
   autoload  :Tools, "hensel_code/tools"
+  autoload  :PAdicSeries, "hensel_code/padic_series"
   autoload  :PAdicBase, "hensel_code/padic_base"
   autoload  :GAdicBase, "hensel_code/gadic_base"
   autoload  :Polynomial, "hensel_code/polynomial"

@@ -113,6 +113,31 @@ h2 * h2.inverse
 
 All the computations are reduced modulo `p^r`.
 
+### p-adic log and exp
+
+The power-series operations are computed directly in `Z/p^rZ`; they never call Ruby's real-valued `Math.log` or `Math.exp` and then re-encode the result. The caller passes the required p-adic precision:
+
+```ruby
+x = HenselCode::TruncatedFinitePadicExpansion.new(5, 6, 6)
+log_result = x.log(5)
+log_result.value                                 # Hensel code modulo 5^5
+log_result.effective_precision                   # => 5
+log_result.first_omitted_term                    # => 6
+log_result.first_omitted_valuation               # => 5
+log_result.stop_reason                           # explains the tail bound
+
+round_trip = log_result.value.exp(5)
+round_trip.value.to_i == x.to_i % (5**5)         # => true
+```
+
+The convergence domains are narrower for `p = 2`:
+
+- For odd `p`, `log` accepts `x in 1 + pZ_p`, and `exp` accepts `y in pZ_p`.
+- For `p = 2`, `log` accepts `x in 1 + 4Z_2`, and `exp` accepts `y in 4Z_2`.
+- Values only in `1 + 2Z_2` for `log` or `2Z_2` for `exp` raise `HenselCode::ConvergenceDomainError`.
+
+When a denominator in a term contains a p factor, the algorithm removes that factor, computes the reciprocal of the remaining p-adic unit at the term's effective modulus, and records the first omitted term's valuation. This avoids treating division by a multiple of `p` as a modular inverse and makes precision loss from the p factor part of the truncation decision.
+
 At any moment, we can check the rational representation of the results we produced:
 
 ```ruby

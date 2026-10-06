@@ -3,6 +3,8 @@
 module HenselCode
   # finite p-adic expansion hensel code class
   class FinitePadicExpansion < PAdicBase
+    include PAdicSeries
+
     attr_accessor :polynomial
 
     def modulus
