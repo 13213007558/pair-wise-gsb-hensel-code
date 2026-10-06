@@ -14,11 +14,14 @@ module HenselCode
   class HenselCodesWithDifferentExponents < StandardError; end
   class IncompatibleOperandTypes < StandardError; end
   class NonInitializableClass < StandardError; end
+  class NonCoprimeFactors < StandardError; end
 
   autoload  :Tools, "hensel_code/tools"
   autoload  :PAdicBase, "hensel_code/padic_base"
   autoload  :GAdicBase, "hensel_code/gadic_base"
   autoload  :Polynomial, "hensel_code/polynomial"
+  autoload  :FormalPolynomial, "hensel_code/formal_polynomial"
+  autoload  :HenselLift, "hensel_code/hensel_lift"
   autoload  :PAdicVerifier, "hensel_code/padic_verifier"
   autoload  :GAdicVerifier, "hensel_code/gadic_verifier"
   autoload  :ModularArithmetic, "hensel_code/modular_arithmetic"
