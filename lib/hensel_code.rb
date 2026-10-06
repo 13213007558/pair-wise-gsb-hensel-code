@@ -14,6 +14,8 @@ module HenselCode
   class HenselCodesWithDifferentExponents < StandardError; end
   class IncompatibleOperandTypes < StandardError; end
   class NonInitializableClass < StandardError; end
+  class InvalidUnramifiedPolynomial < ArgumentError; end
+  class IncompatibleExtensionFields < IncompatibleOperandTypes; end
 
   autoload  :Tools, "hensel_code/tools"
   autoload  :PAdicBase, "hensel_code/padic_base"
@@ -26,10 +28,14 @@ module HenselCode
   autoload  :FiniteGadicExpansion, "hensel_code/finite_gadic_expansion"
   autoload  :TruncatedFinitePadicExpansion, "hensel_code/truncated_finite_padic_expansion"
   autoload  :TruncatedFiniteGadicExpansion, "hensel_code/truncated_finite_gadic_expansion"
+  autoload  :ModularPolynomialArithmetic, "hensel_code/modular_polynomial_arithmetic"
+  autoload  :UnramifiedPadicExtension, "hensel_code/unramified_padic_extension"
+  autoload  :UnramifiedPadicExtensionElement, "hensel_code/unramified_padic_extension_element"
 
   # aliases for classes with long names
   TFPE = TruncatedFinitePadicExpansion
   FPE = TruncatedFinitePadicExpansion
+  UPE = UnramifiedPadicExtension
   HCWDPAE = HenselCodesWithDifferentPrimesAndExponents
   WHIT = WrongHenselCodeInputType
 end

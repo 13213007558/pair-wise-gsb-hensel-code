@@ -53,6 +53,31 @@ There are several types of Hensel codes in the finite-segment p-adic number theo
 3. Truncated finite-segment g-adic Hensel codes
 4. Finite-segmenet g-adic Hensel codes
 
+## Unramified p-adic extensions
+
+`HenselCode::UnramifiedPadicExtension` represents an unramified extension of `Q_p`. Give it a prime
+`p`, the number of p-adic digits `r`, and a monic polynomial that is irreducible modulo `p`.
+Polynomial coefficients use ascending degree. The extension degree and p-adic precision are
+independent parameters.
+
+```ruby
+field = HenselCode::UnramifiedPadicExtension.new(2, 4, [1, 1, 1])
+element = field.element([1, 1])
+
+element + element
+element - element
+element * element
+element.inverse
+element.frobenius
+element.trace
+element.norm
+```
+
+Every element records its valuation, coefficient precision, and effective absolute precision.
+Reduction by the defining polynomial and truncation of coefficients modulo `p^r` are performed as
+separate steps. Inputs that use a non-prime, non-positive precision, a non-monic polynomial, or a
+polynomial reducible modulo `p` are rejected.
+
 For each type of supported Hensel code I will briefly discuss their properties and capabilities as well as unique features that make each type of Hensel code distinct from each other.
 
 ## Truncated finite-segment p-adic Hensel codes
