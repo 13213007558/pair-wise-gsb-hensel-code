@@ -92,7 +92,7 @@ class TestTruncatedFinitePadicExpansion < Minitest::Test
     rat = @rationals.sample
     h = HenselCode::TruncatedFinitePadicExpansion.new prime, exponent, rat
     existing_hensel_code = h.hensel_code
-    new_hensel_code = rand(0..h.hensel_code - 1)
+    new_hensel_code = h.hensel_code.zero? ? 0 : rand(0..h.hensel_code - 1)
 
     assert_equal existing_hensel_code, h.hensel_code
     assert_equal new_hensel_code, h.replace_hensel_code(new_hensel_code).hensel_code

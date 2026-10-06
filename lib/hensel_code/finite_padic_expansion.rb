@@ -34,6 +34,20 @@ module HenselCode
 
     private
 
+    def padic_integer
+      hensel_code.each_with_index.sum { |digit, index| digit * prime**index }
+    end
+
+    def build_padic_integer(residue, precision)
+      value = residue % (prime**precision)
+      digits = Array.new(precision) do
+        digit = value % prime
+        value /= prime
+        digit
+      end
+      self.class.new prime, precision, digits
+    end
+
     def polynomial_form
       to_s
     end
@@ -47,6 +61,7 @@ module HenselCode
       if number.is_a?(Rational)
         @rational = number
       elsif number.is_a?(Array) && number.map(&:class).uniq == [Integer] && number.size == exponent
+        @hensel_code_input = true
         @hensel_code = number
         decode
       else
@@ -74,6 +89,7 @@ module HenselCode
     def decode
       number = 0
       hensel_code.each_with_index { |d, i| number += d * (prime**i) }
+      @polynomial = Polynomial.new prime, hensel_code
       @rational = TruncatedFinitePadicExpansion.new(prime, exponent, number).to_r
     end
 

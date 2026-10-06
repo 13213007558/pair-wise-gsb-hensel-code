@@ -317,6 +317,52 @@ h.replace_hensel_code(38769823656)
 # => <HenselCode: 38769823656>
 ```
 
+### Multiplicative Unit Decomposition
+
+A nonzero residue modulo `p^N` with valuation `k` is decomposed as
+
+```text
+x = p^k * omega * u
+```
+
+where `omega` is the Teichmuller root and `u` is a principal unit. The unit components are represented modulo `p^(N-k)`, so valuation digits are not used as meaningless zero padding.
+
+```ruby
+h = HenselCode::TruncatedFinitePadicExpansion.new 3, 5, Rational(36, 7)
+d = h.unit_decomposition
+
+d.status
+# => :nonzero
+d.valuation
+# => 2
+d.valuation_power
+# => 9
+d.teichmuller_root
+# => <HenselCode: 1>
+d.principal_unit
+# => <HenselCode: 16>
+d.root_power_equation_satisfied?
+# => true
+d.recombine.to_i == h.to_i
+# => true
+```
+
+For odd primes, `omega^(p - 1) = 1` modulo `p^(N-k)` and `u = 1 (mod p)`. The Teichmuller root is lifted through the full available unit precision rather than using only its first residue.
+
+For `p = 2`, the decomposition uses `x = 2^k * s * u`, where `s` is the sign and `u = 1 (mod 4)` when at least two unit digits are known. The root represents this sign, `s^2 = 1`, and `sign_status` is `:determined`. With one unit digit, modulo 2 cannot distinguish the sign, so `sign` is `nil`, `sign_status` is `:undetermined`, and no sign is invented.
+
+Decompositions made at different input precisions can be compared modulo their common unit precision:
+
+```ruby
+low = HenselCode::TruncatedFinitePadicExpansion.new 7, 3, Rational(11, 3)
+high = HenselCode::TruncatedFinitePadicExpansion.new 7, 5, Rational(11, 3)
+
+high.unit_decomposition.compatible_with?(low.unit_decomposition)
+# => true
+```
+
+Zero has separate states. A rational zero is `:zero`, while an integer Hensel code of zero only represents a number known to be zero modulo `p^N` and is `:zero_mod_prime_power`.
+
 ## Polynomials
 
 In order to support finite-segment p-adic Hensel codes, the HenselCode gem offers an engine for computing fixed-length polynomials where all the computations ared reduced modulo `p`.

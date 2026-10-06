@@ -22,6 +22,7 @@ module HenselCode
   autoload  :PAdicVerifier, "hensel_code/padic_verifier"
   autoload  :GAdicVerifier, "hensel_code/gadic_verifier"
   autoload  :ModularArithmetic, "hensel_code/modular_arithmetic"
+  autoload  :UnitDecomposition, "hensel_code/unit_decomposition"
   autoload  :FinitePadicExpansion, "hensel_code/finite_padic_expansion"
   autoload  :FiniteGadicExpansion, "hensel_code/finite_gadic_expansion"
   autoload  :TruncatedFinitePadicExpansion, "hensel_code/truncated_finite_padic_expansion"

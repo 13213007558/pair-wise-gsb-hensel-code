@@ -26,6 +26,14 @@ module HenselCode
 
     private
 
+    def padic_integer
+      hensel_code
+    end
+
+    def build_padic_integer(residue, precision)
+      self.class.new prime, precision, residue % (prime**precision)
+    end
+
     def evaluate(operation, other)
       if operation == "/"
         other_hensel_code = mod_inverse(other.hensel_code, modulus)
@@ -42,6 +50,7 @@ module HenselCode
       when Rational
         @rational = number
       when Integer
+        @hensel_code_input = true
         @hensel_code = number
         decode
       else
@@ -61,6 +70,8 @@ module HenselCode
     end
 
     def decode
+      return @rational = Rational(0) if hensel_code.zero?
+
       eea_vars = eea_core(modulus, hensel_code, n)
       i, x, y = eea_vars[2..4]
       @rational = Rational(*[x, y].map { |e| ((-1)**(i + 1)) * e })
