@@ -14,8 +14,15 @@ module HenselCode
   class HenselCodesWithDifferentExponents < StandardError; end
   class IncompatibleOperandTypes < StandardError; end
   class NonInitializableClass < StandardError; end
+  class InvalidMatrix < StandardError; end
+  class NonSquareMatrix < StandardError; end
+  class InvalidMatrixEntry < StandardError; end
+  class InvalidModulus < StandardError; end
+  class DuplicateModulus < StandardError; end
+  class InsufficientModuli < StandardError; end
 
   autoload  :Tools, "hensel_code/tools"
+  autoload  :MultiModularDeterminant, "hensel_code/multi_modular_determinant"
   autoload  :PAdicBase, "hensel_code/padic_base"
   autoload  :GAdicBase, "hensel_code/gadic_base"
   autoload  :Polynomial, "hensel_code/polynomial"

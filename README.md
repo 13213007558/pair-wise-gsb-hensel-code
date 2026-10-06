@@ -703,6 +703,63 @@ Since some classes can have long names, here are some aliases that can be used f
 - `HenselCode::HenselCodesWithDifferentPrimesAndExponents` => `HenselCode::HCWDPAE`
 - `HenselCode::WrongHenselCodeInputType` => `HenselCode::WHIT`
 
+## Multi-Modular Exact Determinants
+
+`HenselCode::MultiModularDeterminant` computes the exact determinant of big
+integer (or rational) matrices using the modular arithmetic tools of this
+library. The determinant is evaluated independently modulo each prime, and
+the residues are combined with the Chinese remainder theorem. An explicit
+Hadamard bound on the absolute value of the determinant decides when the
+product of the primes is large enough to uniquely recover the signed integer
+result.
+
+A prime that divides the determinant is a normal event — the residue modulo
+that prime is simply zero and participates in the CRT combination like any
+other residue — so genuinely singular matrices, and matrices whose
+determinant vanishes only modulo the first few primes, are both handled
+correctly.
+
+```ruby
+matrix = [
+  [210, 0, 0],
+  [0, 1, 0],
+  [0, 0, 1]
+]
+
+mmd = HenselCode::MultiModularDeterminant.new(matrix)
+mmd.determinant
+# => 210
+mmd.primes
+# => [2, 3, 5, 7, 11]
+mmd.residues
+# => [0, 0, 0, 0, 1]
+mmd.bound
+# => 210
+mmd.modulus
+# => 2310
+```
+
+Rational entries are supported. Denominators are cleared row-wise with exact
+integer arithmetic and the final result is rescaled by the exact product of
+the cleared denominators:
+
+```ruby
+matrix = [
+  [Rational(1, 2), Rational(1, 3)],
+  [Rational(1, 5), Rational(1, 7)]
+]
+
+mmd = HenselCode::MultiModularDeterminant.new(matrix)
+mmd.determinant
+# => (1/210)
+mmd.scale
+# => 210
+```
+
+A custom sequence of primes can be supplied with the `primes:` keyword. If
+the supplied primes are exhausted before the modulus exceeds twice the
+Hadamard bound, `HenselCode::InsufficientModuli` is raised.
+
 ## Coming Soon
 
 There are many types of Hensel codes. We are currently implementing only one. Very soon we will add more types of Hensel codes to the library, which will further expand what we can do with it.
