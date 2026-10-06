@@ -1,3 +1,6 @@
+## [Unreleased]
+- Add fault-tolerant decoding for truncated g-adic Hensel codes: `HenselCode::FaultTolerantGadicDecoder` (also exposed as `HenselCode::TruncatedFiniteGadicExpansion.fault_tolerant_decode`) recovers the unique provable rational from pairwise coprime moduli and residues with up to two corrupted residues, reporting the inconsistent moduli and the independently checkable consistent-modulus product condition, and explicitly reporting insufficient information or ambiguity when no rational can be certified.
+
 ## [0.4.0] - 2022-03-29
 - Add the fourth type of supported Hensel code: the finite-segement g-adic Hensel code.
 

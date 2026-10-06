@@ -627,6 +627,60 @@ h4.to_r
 # => (84245698732457344123/198437243845987593234524)
 ```
 
+### Fault-tolerant decoding
+
+Since each digit of a truncated g-adic Hensel code is computed independently, the codes are a natural fit for distributed computation. However, a few of the residues returned from the distributed workers may be corrupted. The fault-tolerant decoding mode recovers the unique *provable* rational from pairwise coprime moduli, the observed residues, and the numerator/denominator bounds of the encoded rational, while pointing out the moduli whose residues are inconsistent:
+
+```ruby
+primes = [257, 263, 269, 271, 277, 281]
+r = 2
+rat = Rational(37897,52234)
+h = HenselCode::TruncatedFiniteGadicExpansion.new primes, r, rat
+moduli = h.modululi
+# => [66049, 69169, 72361, 73441, 76729, 78961]
+residues = h.to_a
+# => [8952, 29826, 14077, 64695, 32037, 62752]
+
+# two residues come back corrupted from the distributed computation
+residues[1] = (residues[1] + 1) % moduli[1]
+residues[4] = (residues[4] + 1) % moduli[4]
+
+result = HenselCode::TruncatedFiniteGadicExpansion.fault_tolerant_decode moduli, residues, 37897, 52234
+result.status
+# => :ok
+result.rational
+# => (37897/52234)
+result.inconsistent_moduli
+# => [69169, 76729]
+```
+
+The decoder does not majority-vote for a residue, and it does not accept a decoded rational merely because it is small. A candidate rational `a/b` is certified only when its consistency set `S = { i : b * residues[i] == a (mod moduli[i]) }` satisfies the independently checkable product condition
+
+```
+product of moduli in S  >  2 * numerator_bound * denominator_bound * product of moduli outside S
+```
+
+which guarantees that no other rational within the bounds can have a consistency set satisfying the same condition. The certificate is returned with the result and can be verified by anyone:
+
+```ruby
+result.consistent_product
+# => 27715455989123808889
+result.uniqueness_bound # 2 * 37897 * 52234 * 69169 * 76729
+# => 21011601099513110996
+result.verified? # consistent_product > uniqueness_bound
+# => true
+```
+
+When the information carried by the residues is not enough to certify a unique rational, the decoder says so explicitly instead of guessing: `result.status` is `:insufficient_information` when no certifiable candidate exists, and `:ambiguous` when several candidates explain the residues but none satisfies the product condition (in which case `result.candidates` lists them):
+
+```ruby
+result = HenselCode::FaultTolerantGadicDecoder.decode [3, 5, 7], [2, 3, 2], 2, 2
+result.status
+# => :ambiguous
+result.candidates
+# => [(1/2), (2/1)]
+```
+
 ## Finite-segment g-adic Hensel codes
 
 ### Description

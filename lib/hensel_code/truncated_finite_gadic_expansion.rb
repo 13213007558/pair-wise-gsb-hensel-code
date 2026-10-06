@@ -3,6 +3,18 @@
 module HenselCode
   # truncated finite g-adic expansion hensel code class
   class TruncatedFiniteGadicExpansion < GAdicBase
+    # Fault-tolerant decoding mode for g-adic Hensel codes: given pairwise
+    # coprime +moduli+ (e.g. moduli of a truncated g-adic Hensel code), the
+    # observed +residues+, and the +numerator_bound+ and +denominator_bound+ of
+    # the encoded rational, recovers the unique certifiable rational while
+    # tolerating up to +max_errors+ corrupted residues. See
+    # HenselCode::FaultTolerantGadicDecoder.
+    def self.fault_tolerant_decode(moduli, residues, numerator_bound, denominator_bound, max_errors: 2)
+      FaultTolerantGadicDecoder.decode(
+        moduli, residues, numerator_bound, denominator_bound, max_errors: max_errors
+      )
+    end
+
     def modululi
       primes.map { |prime| prime**exponent }
     end
