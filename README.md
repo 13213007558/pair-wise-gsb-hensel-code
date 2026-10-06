@@ -703,6 +703,36 @@ Since some classes can have long names, here are some aliases that can be used f
 - `HenselCode::HenselCodesWithDifferentPrimesAndExponents` => `HenselCode::HCWDPAE`
 - `HenselCode::WrongHenselCodeInputType` => `HenselCode::WHIT`
 
+## Multivariate Hensel Lifting
+
+`HenselCode::HenselLift` lifts a known solution of a square system of integer polynomial equations from modulo a prime `p` to modulo `p^N`. Equations are given as structured `HenselCode::MultivariatePolynomial` objects (a list of variables plus a hash mapping exponent arrays to integer coefficients); no string expressions are evaluated.
+
+Before lifting, the Jacobian of the system at the seed is checked for invertibility modulo `p`. If it is singular, the result is explicitly reported as not applicable (`result.applicable? == false`, `result.status == :singular_jacobian`) instead of attempting to enumerate branches. Each lifting level reports its residuals and effective precision, and the final solution is substituted back into all equations.
+
+```ruby
+# f1 = x^2 - y, f2 = y^2 - 2 (a coupled system: x^4 = 2, y = x^2 in the 7-adics)
+f1 = HenselCode::MultivariatePolynomial.new([:x, :y], [2, 0] => 1, [0, 1] => -1)
+f2 = HenselCode::MultivariatePolynomial.new([:x, :y], [0, 2] => 1, [0, 0] => -2)
+
+result = HenselCode::HenselLift.lift(
+  equations: [f1, f2],
+  prime: 7,
+  exponent: 5,
+  seed: { x: 2, y: 4 } # a known solution modulo 7
+)
+
+result.applicable?
+# => true
+result.modulus
+# => 16807
+result.solution
+# => {:x=>12126, :y=>12240} (x^4 = 2 and y = x^2 modulo 7^5)
+result.levels
+# => [{:precision=>1, :modulus=>7, :residuals=>[0, 0]}, ..., {:precision=>5, :modulus=>16807, :residuals=>[0, 0]}]
+result.verified?
+# => true (all equations evaluate to 0 modulo 7^5 at the lifted solution)
+```
+
 ## Coming Soon
 
 There are many types of Hensel codes. We are currently implementing only one. Very soon we will add more types of Hensel codes to the library, which will further expand what we can do with it.

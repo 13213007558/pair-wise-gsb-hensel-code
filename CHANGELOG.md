@@ -1,3 +1,7 @@
+## [Unreleased]
+- Add `HenselCode::MultivariatePolynomial` for structured sparse multivariate polynomials with integer coefficients.
+- Add `HenselCode::HenselLift` for lifting solutions of square integer polynomial systems from modulo `p` to modulo `p^N`, with Jacobian invertibility checks, per-level residuals and precision, and final substitution into all equations.
+
 ## [0.4.0] - 2022-03-29
 - Add the fourth type of supported Hensel code: the finite-segement g-adic Hensel code.
 
