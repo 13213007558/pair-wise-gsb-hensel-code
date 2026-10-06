@@ -391,6 +391,34 @@ f + g
 # => <Polynomial: 238 + 84p + 46p^2>
 ```
 
+## Formal polynomials and multifactor Hensel lifting
+
+`HenselCode::FormalPolynomial` is an independent representation of a formal polynomial in `Z[x]` (dense coefficients, constant term first). Unlike `HenselCode::Polynomial`, which is a p-adic expansion whose coefficients are p-adic digits subject to carry propagation, a `FormalPolynomial` performs exact integer arithmetic, and reductions modulo an integer or computations in `F_p[x]` are always explicit:
+
+```ruby
+f = HenselCode::FormalPolynomial.new [9, 9]
+f * f
+# => <FormalPolynomial: 81 + 162x + 81x^2>
+f.mod 5
+# => <FormalPolynomial: 4 + 4x>
+```
+
+`HenselCode::MultiHenselLift` lifts a whole set of factors synchronously. Given a monic integer polynomial `f` and monic factors `g_1, ..., g_r` that are pairwise coprime in `F_p[x]` with `f = g_1 * ... * g_r (mod p)`, it computes factors `G_i` with `f = G_1 * ... * G_r (mod p^N)`. Factors that are not pairwise coprime modulo `p` are rejected with `HenselCode::NonCoprimePolynomialFactors`.
+
+```ruby
+p = 7
+g1 = HenselCode::FormalPolynomial.new [1, 1]    # x + 1
+g2 = HenselCode::FormalPolynomial.new [3, 1]    # x + 3
+g3 = HenselCode::FormalPolynomial.new [0, 2, 1] # x^2 + 2x
+f = (g1 * g2 * g3) + (HenselCode::FormalPolynomial.new([2, 0, 1]) * p)
+
+result = HenselCode::MultiHenselLift.new(p, f, [g1, g2, g3]).lift(4)
+result.factors
+# => [<FormalPolynomial: 1877 + 1x>, <FormalPolynomial: 1158 + 1x>, <FormalPolynomial: 1344 + 1773x + 1x^2>]
+```
+
+The result keeps the correspondence between input and lifted factors: `result.factors[i]` is the lift of `result.input_factors[i]`, and every lifted factor stays monic. `result.residuals` maps each level `k` to the product residual `f - G_1 * ... * G_r` at that level, an integer polynomial whose coefficients are all divisible by `p^k`.
+
 ## Finite-segment p-adic Hensel codes
 
 ### Description
