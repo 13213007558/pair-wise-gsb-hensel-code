@@ -3,6 +3,8 @@
 module HenselCode
   # Required basics of number generation and modular
   module Tools
+    extend self
+
     def random_integer(bits)
       OpenSSL::BN.rand(bits).to_i
     end
@@ -89,7 +91,176 @@ module HenselCode
       result % g
     end
 
+    def fault_tolerant_gadic_decode(
+      moduli,
+      remainders,
+      numerator_bound,
+      denominator_bound = numerator_bound,
+      max_errors: 2
+    )
+      validate_fault_tolerant_arguments(moduli, remainders, numerator_bound, denominator_bound, max_errors)
+
+      minimum_set_size = moduli.size - max_errors
+      candidates = {}
+
+      minimum_set_size.upto(moduli.size) do |set_size|
+        moduli.each_index.to_a.combination(set_size) do |indices|
+          subset_moduli = indices.map { |index| moduli[index] }
+          subset_remainders = indices.map { |index| remainders[index] }
+          modulus_product = subset_moduli.inject(:*)
+          next unless modulus_product > 2 * numerator_bound * denominator_bound
+
+          rational = bounded_rational_reconstruction(
+            subset_moduli,
+            subset_remainders,
+            numerator_bound,
+            denominator_bound
+          )
+          add_fault_tolerant_candidate(candidates, rational, modulus_product) if rational
+        end
+      end
+
+      candidates.map do |rational, candidate|
+        matching_indices = moduli.each_index.select do |index|
+          remainder_matches_rational?(remainders[index], rational, moduli[index])
+        end
+        matching_product = matching_indices.map { |index| moduli[index] }.inject(:*)
+
+        candidate[:consistent_indices] = matching_indices
+        candidate[:inconsistent_indices] = moduli.each_index.to_a - matching_indices
+        candidate[:consistent_moduli] = matching_indices.map { |index| moduli[index] }
+        candidate[:inconsistent_moduli] = candidate[:inconsistent_indices].map { |index| moduli[index] }
+        candidate[:consistent_modulus_product] = matching_product
+        candidate[:consistent_modulus_product_condition] = product_condition(
+          matching_product,
+          2 * numerator_bound * denominator_bound
+        )
+        candidate[:certified] = matching_product > 2 * numerator_bound * denominator_bound
+      end
+
+      certified_candidates = candidates.select { |_, candidate| candidate[:certified] }
+      fault_tolerant_result(certified_candidates, numerator_bound, denominator_bound)
+    end
+
+    alias fault_tolerant_decode fault_tolerant_gadic_decode
+
     private
+
+    def validate_fault_tolerant_arguments(moduli, remainders, numerator_bound, denominator_bound, max_errors)
+      unless moduli.is_a?(Array) && remainders.is_a?(Array) && moduli.size == remainders.size && !moduli.empty?
+        raise ArgumentError, "moduli and remainders must be non-empty arrays of the same size"
+      end
+
+      unless moduli.all? { |modulus| modulus.is_a?(Integer) && modulus > 1 }
+        raise ArgumentError, "moduli must contain integers greater than 1"
+      end
+
+      unless moduli.combination(2).all? { |modulus, other_modulus| modulus.gcd(other_modulus) == 1 }
+        raise ArgumentError, "moduli must be pairwise coprime"
+      end
+
+      unless remainders.all? { |remainder| remainder.is_a?(Integer) && remainder >= 0 }
+        raise ArgumentError, "remainders must contain non-negative integers"
+      end
+
+      moduli.zip(remainders).each do |modulus, remainder|
+        next if remainder < modulus
+
+        raise ArgumentError, "remainder #{remainder} must be smaller than modulus #{modulus}"
+      end
+
+      unless [numerator_bound, denominator_bound].all? { |bound| bound.is_a?(Integer) && bound.positive? }
+        raise ArgumentError, "numerator and denominator bounds must be positive integers"
+      end
+
+      unless max_errors.is_a?(Integer) && max_errors >= 0
+        raise ArgumentError, "max_errors must be a non-negative integer"
+      end
+
+      return unless max_errors >= moduli.size
+
+      raise ArgumentError, "max_errors must be smaller than the number of moduli"
+    end
+
+    def bounded_rational_reconstruction(moduli, remainders, numerator_bound, denominator_bound)
+      modulus_product = moduli.inject(:*)
+      encoded_integer = crt(moduli, remainders)
+      return Rational(0, 1) if encoded_integer.zero?
+
+      previous_remainder, remainder = modulus_product, encoded_integer
+      previous_coefficient, coefficient = 0, 1
+
+      while remainder.positive?
+        quotient = previous_remainder / remainder
+        previous_remainder, remainder = remainder, previous_remainder - (quotient * remainder)
+        previous_coefficient, coefficient = coefficient, previous_coefficient - (quotient * coefficient)
+        next unless remainder <= numerator_bound && coefficient.abs <= denominator_bound
+
+        rational = Rational(remainder, coefficient)
+        next unless valid_reconstructed_rational?(
+          rational,
+          encoded_integer,
+          modulus_product,
+          numerator_bound,
+          denominator_bound
+        )
+
+        return rational
+      end
+
+      nil
+    end
+
+    def valid_reconstructed_rational?(rational, encoded_integer, modulus_product, numerator_bound, denominator_bound)
+      rational.numerator.abs <= numerator_bound &&
+        rational.denominator <= denominator_bound &&
+        rational.denominator.gcd(modulus_product) == 1 &&
+        remainder_matches_rational?(encoded_integer, rational, modulus_product)
+    end
+
+    def remainder_matches_rational?(remainder, rational, modulus)
+      (rational.numerator * mod_inverse(rational.denominator, modulus)) % modulus == remainder % modulus
+    end
+
+    def add_fault_tolerant_candidate(candidates, rational, modulus_product)
+      return if candidates.key?(rational)
+
+      candidates[rational] = {
+        rational: rational,
+        witness_modulus_product: modulus_product
+      }
+    end
+
+    def product_condition(product, threshold)
+      "#{product} > #{threshold}"
+    end
+
+    def fault_tolerant_result(candidates, numerator_bound, denominator_bound)
+      threshold = 2 * numerator_bound * denominator_bound
+      base_result = {
+        numerator_bound: numerator_bound,
+        denominator_bound: denominator_bound,
+        required_modulus_product: threshold
+      }
+
+      if candidates.size == 1
+        rational, candidate = candidates.first
+        base_result.merge(
+          status: :recovered,
+          rational: rational,
+          consistent_indices: candidate[:consistent_indices],
+          inconsistent_indices: candidate[:inconsistent_indices],
+          consistent_moduli: candidate[:consistent_moduli],
+          inconsistent_moduli: candidate[:inconsistent_moduli],
+          consistent_modulus_product: candidate[:consistent_modulus_product],
+          consistent_modulus_product_condition: candidate[:consistent_modulus_product_condition]
+        )
+      elsif candidates.size > 1
+        base_result.merge(status: :ambiguous, candidates: candidates.values)
+      else
+        base_result.merge(status: :unrecoverable)
+      end
+    end
 
     def polynomial_variable(index)
       i = index > 1 ? 2 : index

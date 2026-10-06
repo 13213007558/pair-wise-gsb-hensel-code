@@ -542,6 +542,51 @@ h2.to_r
 # => (5/4)
 ```
 
+### Fault-tolerant decoding
+
+If one or two distributed residues may be wrong, use
+`HenselCode::Tools.fault_tolerant_gadic_decode`. It receives pairwise coprime moduli,
+their residues, and separate absolute bounds for the numerator and denominator:
+
+```ruby
+moduli = [7, 11, 13, 17]
+remainders = [3, 8, 5, 0]
+result = HenselCode::Tools.fault_tolerant_gadic_decode(moduli, remainders, 10, 10)
+# => {:status=>:recovered,
+#     :rational=>(2/3),
+#     :consistent_indices=>[0, 1, 2],
+#     :inconsistent_indices=>[3],
+#     :consistent_moduli=>[7, 11, 13],
+#     :inconsistent_moduli=>[17],
+#     :consistent_modulus_product=>1001,
+#     :consistent_modulus_product_condition=>"1001 > 200",
+#     :required_modulus_product=>200,
+#     :numerator_bound=>10,
+#     :denominator_bound=>10}
+```
+
+The recovery certificate is the strict inequality
+
+```ruby
+product_of_consistent_moduli > 2 * numerator_bound * denominator_bound
+```
+
+Together with the bound on the numerator and denominator, this condition proves uniqueness
+because two distinct bounded fractions satisfying the same residues modulo that product would
+force a smaller nonzero integer to be divisible by the product, which is impossible. Each
+reported modulus is independently rechecked against the recovered fraction; no majority vote
+or smallest-fraction heuristic is used.
+
+The method examines subsets obtained by omitting at most two moduli
+(`max_errors` defaults to `2`). It reports one of these statuses:
+
+- `:recovered`: exactly one bounded rational has a globally verified consistent-modulus
+  product satisfying the inequality.
+- `:ambiguous`: more than one bounded rational has such a certified consistent set; all
+  candidates are returned.
+- `:unrecoverable`: no subset remaining after the allowed number of mismatches has product
+  large enough to prove a bounded fraction.
+
 ### Arithmetic
 
 We compute addition, subtraction, multiplication, and division as follows:
