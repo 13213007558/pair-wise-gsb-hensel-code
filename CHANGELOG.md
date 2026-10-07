@@ -1,3 +1,10 @@
+## [Unreleased]
+- Add the `FormalPolynomial` class for formal polynomials with exact (`Integer`) or p-adic (`TruncatedFinitePadicExpansion`, `FinitePadicExpansion`) coefficients
+- Add exact resultant computation via the Sylvester matrix and the fraction-free Bareiss algorithm
+- Add the subresultant polynomial remainder sequence with certified p-adic gcd degree detection
+- Report determined p-adic valuations, certified valuation lower bounds, and remaining unit precision for results known modulo `p^r`, without concluding common factors from a vanishing residue
+- Add `padic_valuation` to the module `Tools`
+
 ## [0.4.0] - 2022-03-29
 - Add the fourth type of supported Hensel code: the finite-segement g-adic Hensel code.
 

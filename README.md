@@ -695,6 +695,59 @@ rat1 / rat2
 # => (6/5)
 ```
 
+## Formal Polynomials, Resultants, and Subresultants
+
+The `Polynomial` class stores the digits of a single p-adic number and is used internally for carrying in finite p-adic expansions. For actual polynomial algebra there is a separate class, `FormalPolynomial`, whose elements are formal polynomials with exact (`Integer`) or p-adic (`TruncatedFinitePadicExpansion` or `FinitePadicExpansion`) coefficients, given constant term first:
+
+```ruby
+prime = 257
+f = HenselCode::FormalPolynomial.new(prime, [-3, 2, 1])       # x^2 + 2x - 3
+g = HenselCode::FormalPolynomial.new(prime, [5, 2, 0, 1])     # x^3 + 2x + 5
+
+result = f.resultant(g)
+result.to_i        # => -224 (exact, since all coefficients are exact)
+result.valuation   # => 0
+```
+
+When some coefficients are p-adic Hensel codes known only modulo `p^r`, the resultant and the subresultants are computed exactly over the integers from representatives of the coefficients and then reduced modulo `p^r`, where `r` is the smallest precision among the coefficients. The result reports what is determined and what is still uncertain:
+
+```ruby
+r = 9
+coefficient = ->(c) { HenselCode::TruncatedFinitePadicExpansion.new(prime, r, Rational(c % prime**r, 1)) }
+h = HenselCode::FormalPolynomial.new(prime, [-2 * (1 + prime**8), 1 - prime**8, 1].map(&coefficient))
+k = HenselCode::FormalPolynomial.new(prime, [-3, 2, 1].map(&coefficient))
+
+result = k.resultant(h)
+result.to_i            # residue of the resultant modulo 257^9
+result.determined?     # => true: the residue is nonzero
+result.valuation       # => 8: the exact p-adic valuation
+result.valuation_bound # => 8: certified lower bound
+result.unit_precision  # => 1: the unit part is known to 1 more p-adic digit
+result.common_factor?  # => false
+```
+
+A resultant that vanishes modulo `p^r` does **not** imply a common factor: it only means the valuation is at least `r`. In that case `valuation` and `common_factor?` return `nil` and `valuation_bound` returns `r`:
+
+```ruby
+result = k.resultant(h) # recomputed with r = 8
+result.to_i            # => 0
+result.determined?     # => false
+result.valuation       # => nil
+result.valuation_bound # => 8
+result.common_factor?  # => nil: undecided, increase the precision
+```
+
+The subresultant polynomial remainder sequence is available as well. The 0-th subresultant is the resultant, and over the p-adics the degree of the gcd is the smallest index of a nonzero subresultant:
+
+```ruby
+sequence = k.subresultants(h)
+sequence[j]                 # j-th subresultant polynomial (coefficients modulo p^r)
+sequence.vanishing_degrees  # indices vanishing modulo p^r (undetermined, not zero)
+sequence.determined_degrees # indices certified nonzero
+sequence.gcd_degree         # certified p-adic gcd degree, or nil
+sequence.gcd_degree_bounds  # certified [lower, upper] bounds
+```
+
 ## Class Aliases
 
 Since some classes can have long names, here are some aliases that can be used for keeping the lines of code shorter:

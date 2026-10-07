@@ -32,6 +32,14 @@ class TestTools < Minitest::Test
     end
   end
 
+  def test_padic_valuation
+    assert_equal 0, padic_valuation(1, 257)
+    assert_equal 1, padic_valuation(257, 257)
+    assert_equal 3, padic_valuation(2 * (257**3), 257)
+    assert_equal 3, padic_valuation(-2 * (257**3), 257)
+    assert_equal Float::INFINITY, padic_valuation(0, 257)
+  end
+
   def test_eea_core
     assert_equal [1, 1, 3, 0, -22], eea_core(23, 22)
     assert_equal [9, 1, 3, 0, -8], eea_core(9, 72)

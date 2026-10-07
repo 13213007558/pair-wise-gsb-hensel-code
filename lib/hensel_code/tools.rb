@@ -78,6 +78,20 @@ module HenselCode
       y % mod
     end
 
+    # p-adic valuation of an integer: the largest v such that prime**v
+    # divides the integer; Infinity for 0
+    def padic_valuation(integer, prime)
+      return Float::INFINITY if integer.zero?
+
+      valuation = 0
+      integer = integer.abs
+      while (integer % prime).zero?
+        integer /= prime
+        valuation += 1
+      end
+      valuation
+    end
+
     def crt(moduli, remainders)
       g = moduli.inject(:*)
       result = 0
