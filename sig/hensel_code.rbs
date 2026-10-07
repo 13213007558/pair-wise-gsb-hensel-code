@@ -1,4 +1,60 @@
 module HenselCode
   VERSION: String
   # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+  class PadicResidue
+    attr_reader prime: Integer
+    attr_reader precision: Integer
+    attr_reader residue: Integer
+    attr_reader valuation: Integer
+    def initialize: (Integer prime, Integer precision, Integer residue) -> void
+    def modulus: () -> Integer
+    def valuation_determined?: () -> bool
+    def valuation_uncertain?: () -> bool
+    def known_precision: () -> Integer
+    def unresolved_precision: () -> Integer
+    def unit_residue: () -> Integer?
+    def zero?: () -> bool
+    def to_h: () -> Hash[Symbol, untyped]
+    def to_s: () -> String
+    def inspect: () -> String
+  end
+
+  class FormalPolynomial
+    attr_reader prime: Integer
+    attr_reader precision: Integer
+    attr_reader coefficients: Array[Integer]
+    def self.from_padic_coefficients: (Integer, Integer, Array[untyped]) -> FormalPolynomial
+    def initialize: (Integer prime, Integer precision, Array[Integer] coefficients) -> void
+    def degree_bound: () -> Integer
+    def degree: () -> Integer?
+    def known_degree: () -> Integer?
+    def leading_residue: () -> Integer
+    def []: (Integer index) -> Integer
+    def +: (FormalPolynomial) -> FormalPolynomial
+    def -: (FormalPolynomial) -> FormalPolynomial
+    def *: (FormalPolynomial) -> FormalPolynomial
+    def coefficients_with_zeros: (?Integer size) -> Array[Integer]
+    def valuation_report: () -> Array[Hash[Symbol, untyped]]
+    def to_h: () -> Hash[Symbol, untyped]
+    def to_s: (?String variable) -> String
+    def inspect: () -> String
+  end
+
+  module IntegerDeterminant
+    def self.determinant: (Array[Array[Integer]]) -> Integer
+  end
+
+  class PolynomialResultant
+    attr_reader f: FormalPolynomial
+    attr_reader g: FormalPolynomial
+    def self.resultant: (FormalPolynomial, FormalPolynomial) -> Hash[Symbol, untyped]
+    def self.subresultants: (FormalPolynomial, FormalPolynomial) -> Array[Hash[Symbol, untyped]]
+    def self.compute: (FormalPolynomial, FormalPolynomial) -> Hash[Symbol, untyped]
+    def initialize: (FormalPolynomial f, FormalPolynomial g) -> void
+    def resultant: () -> Hash[Symbol, untyped]
+    def subresultants: () -> Array[Hash[Symbol, untyped]]
+    def subresultant: (Integer degree) -> Hash[Symbol, untyped]
+    def compute: () -> Hash[Symbol, untyped]
+  end
 end

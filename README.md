@@ -359,6 +359,56 @@ g * g.inverse
 # => <Polynomial: 1 + 0p + 0p^2>
 ```
 
+### Formal polynomials, resultants, and subresultants
+
+`Polynomial` remains the fixed-length representation used for p-adic digit carries. Resultants instead use `FormalPolynomial`, whose coefficients are residues modulo `p^n` and whose variable is an independent formal variable (shown as `x`). Multiplication on this class keeps the full formal degree:
+
+```ruby
+f = HenselCode::FormalPolynomial.new(5, 4, [1, 1])
+g = HenselCode::FormalPolynomial.new(5, 4, [1 + 5**3, 1])
+
+report = HenselCode::PolynomialResultant.compute(f, g)
+report[:resultant]
+# => {
+#      prime: 5,
+#      precision: 4,
+#      residue: 500,
+#      valuation: 3,
+#      valuation_lower_bound: 3,
+#      valuation_determined: true,
+#      known_unit_precision: 1,
+#      unresolved_precision: 0
+#    }
+
+report[:subresultants]
+# => Constant coefficient subresultant S_0, followed by S_1, ... where applicable.
+```
+
+When the computed residue is zero modulo `p^n`, the API does not conclude that the integer polynomials share a factor. It reports only the proven bound `valuation >= n`:
+
+```ruby
+f = HenselCode::FormalPolynomial.new(5, 1, [1, 1])
+g = HenselCode::FormalPolynomial.new(5, 1, [1 + 5**3, 1])
+HenselCode::PolynomialResultant.resultant(f, g)
+# => {
+#      residue: 0,
+#      valuation: nil,
+#      valuation_lower_bound: 1,
+#      valuation_determined: false,
+#      known_unit_precision: 0,
+#      unresolved_precision: 1
+#    }
+```
+
+For the near-common factors `x + 1` and `x + 1 + 5^3`, the integer resultant is `-5^3`. Precision `1`, `2`, and `3` only establishes `valuation >= precision`; precision `4` determines valuation `3`, and precision `5` gives two known digits of the unit part. Each subresultant coefficient has the same precision fields.
+
+Coefficients can also be supplied as p-adic digit arrays (digits from degree `0` upward) or existing Hensel code objects:
+
+```ruby
+f = HenselCode::FormalPolynomial.from_padic_coefficients(5, 4, [[1, 1], [0, 0, 0, 1]])
+# => <FormalPolynomial: 6 + 125x>
+```
+
 ### Constraints
 
 Operations with fixed-length polynomials require operands with the same degree:
